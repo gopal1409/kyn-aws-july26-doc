@@ -40,3 +40,20 @@ provider "aws" {
   ######check the vpc is created or not 
   terraform destroy 
   ##check your vpc is deleted
+#lets create the subnet
+resource "aws_subnet" "web_subnet" {
+  vpc_id     = aws_vpc.my_vpc.id #this will ensure that the subnet is created and attach to this vpc
+  cidr_block = "10.0.1.0/24"
+
+  tags = {
+    Name = "Main"
+  }
+}
+
+#############
+terraform plan 
+terraform apply
+###lets visualized it 
+terraform graph
+###copy the full output and paste it in this website
+https://dreampuf.github.io/GraphvizOnline/
