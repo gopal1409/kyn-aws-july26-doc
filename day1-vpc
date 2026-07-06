@@ -1,0 +1,42 @@
+#we want to create a vpc using terraform. 
+  #before that we will create a folder in desktop terraform-skyproject
+  #lets create a a1.provider.tf
+  terraform {
+  required_providers {
+    aws = { #this is the name of the cloud service provider
+      source  = "hashicorp/aws"
+      version = "~> 6.0" #it is important for production
+    }
+  }
+}
+
+# Configure the AWS Provider
+provider "aws" {
+  region = "us-east-1" #this will ensure that all resources are created in the us-east-1 region
+  #this is the subscription id for your AWS account
+}
+
+#this provider block is divded into two parts
+//
+/* close */
+
+  #lets create another file which will create my vpc a2.vpc.tf
+  resource "aws_vpc" "my_vpc" {
+  cidr_block           = "10.0.0.0/16"
+  enable_dns_support   = true
+  enable_dns_hostnames = true
+  tags = {
+    Name = "gopal-vpc" #change it to your name
+    name="test-vpc"
+  }
+}
+
+###after this do 
+  terraform init
+  terraform fmt
+  terraform validate
+  terraform plan
+  terraform apply
+  ######check the vpc is created or not 
+  terraform destroy 
+  ##check your vpc is deleted
