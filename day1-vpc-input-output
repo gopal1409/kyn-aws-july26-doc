@@ -1,0 +1,79 @@
+#modify the a1.provide.tf replace everything with this
+  terraform {
+  required_providers {
+    aws = { #this is the name of the cloud service provider
+      source  = "hashicorp/aws"
+      version = "~> 6.0" #it is important for production
+    }
+  }
+}
+
+# Configure the AWS Provider
+provider "aws" {
+  region = var.aws_region #this will ensure that all resources are created in the specified AWS region
+  #this is the subscription id for your AWS account
+}
+
+#this provider block is divded into two parts
+//
+/* close */
+
+  #modify a2.vpc.tf replace eveyrthing with this and change my name to your name
+  resource "aws_vpc" "my_vpc" {
+  cidr_block           = var.vpc_cidr
+  enable_dns_support   = true
+  enable_dns_hostnames = true
+  tags = {
+    Name = "gopal-vpc"
+    name="test-vpc"
+  }
+}
+
+#replace the subnet file with this
+  resource "aws_subnet" "web_subnet" {
+  vpc_id     = aws_vpc.my_vpc.id #this will ensure that the subnet is created and attach to this vpc
+  cidr_block = var.web_subnet_cidr
+
+  tags = {
+    Name = "Main"
+  }
+}
+
+##lets create input varaibles and output varaibles
+  #create a new file a3.generic-varaibles.tf
+  variable "aws_region" {
+  description = "The AWS region to create resources in"
+  type = string
+  default = "us-east-1"
+ /* validation {
+    condition = contains(["us-east-1","us-east-2"],var.aws_region)
+    error_message = "choose either us-east-1 or us-east-2"
+  }*/
+}
+#we declare the varaible how to call the varaible
+
+  ##lets create network varaibles a3.network-variables.tf
+
+  variable "vpc_cidr" {
+  description = "The CIDR block for the VPC"
+  type = string
+  default = "10.0.0.0/16"
+}
+
+variable "web_subnet_cidr" {
+  description = "The CIDR block for the web subnet"
+  type = string
+  default = "10.0.1.0/24"
+}
+
+#lets diplay the vnet and subnet using output create a new file called as output
+  output "aws_vpc_id" {
+   value = aws_vpc.my_vpc.id
+   description = "The ID of the VPC"
+}
+output "aws_subnet_id" {
+   value = aws_subnet.web_subnet.id
+   description = "The ID of the web subnet"
+}
+##then do terraform apply at the end it will show you vpc id and subnet id
+  
