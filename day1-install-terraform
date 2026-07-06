@@ -1,0 +1,15 @@
+##inside the rdp open powershell in admin mode
+#then we will install choco package manager
+  Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+  #######after installing choco package manager
+  refreshenv
+  ####
+  choco install terraform
+  choco install git
+  choco install vscode
+choco install awscli -y
+##to verify close the powershell start the powershell in non admin mode
+  terraform
+  aws
+  git
+  ##############################
