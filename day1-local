@@ -1,0 +1,18 @@
+#lets create a file a5.local.tf
+  locals {
+  project_tags = {
+    Project     = "skyrocket"
+    Environment = "dev"
+    owner       = "SAP"
+  }
+}
+
+############lets add the same in vpc and subnet.
+  ##in vpc delete the tag line add this line
+    tags                 = merge (local.project_tags, 
+  { Gopal = "skyrocketvpc" })
+}
+
+###in subnet delete the tag line and add this line 
+    tags = local.project_tags
+  
