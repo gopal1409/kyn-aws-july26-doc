@@ -1,0 +1,19 @@
+##lets create security group using dynamic block create a new file sg.tf change my name to your name
+  locals {
+  ports = [22,80,443]
+}
+
+resource "aws_security_group" "web_sg" {
+    name = "web-sg-gopal"
+    vpc_id = aws_vpc.my_vpc.id 
+    dynamic "ingress" {
+        for_each = local.ports
+        content {
+          from_port = ingress.value
+          to_port = ingress.value
+          protocol = "tcp"
+          cidr_blocks = [ "0.0.0.0/0" ]
+        }
+      
+    }
+}
