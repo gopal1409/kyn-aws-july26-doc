@@ -1,0 +1,42 @@
+##lets create object subnet
+  #3before this do terraform destroy
+  @@we will create a new file b1.subnet-varaibles.tf here we are declaring object variables
+
+  variable "web_subnet" {
+    description = "The name of the subnet"
+    type        = map(object({
+        az = string
+        cidr = string
+        
+    }))
+    default = {
+        subnet1 = {
+            az   = "us-east-1a"
+            cidr = "10.0.1.0/24"
+        }
+        subnet2 = {
+            az   = "us-east-1b"
+            cidr = "10.0.2.0/24"
+        }
+        subnet3 = {
+            az   = "us-east-1c"
+            cidr = "10.0.3.0/24"
+        }
+    }
+}
+  ##############lets use the same in our subnet a2.websubnet replace the whole file with this new once
+    resource "aws_subnet" "web_subnet" {
+  for_each = var.web_subnet
+  vpc_id     = aws_vpc.my_vpc.id #this will ensure that the subnet is created and attach to this vpc
+  cidr_block = each.value.cidr
+  availability_zone = each.value.az
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "web-subnet-${each.key}"
+    AZ   = each.value.az
+  }
+}
+
+#do terraform plan bcz of for each it will show you it is creating three subnet. then do terraform apply
+  
