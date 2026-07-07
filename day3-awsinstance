@@ -1,0 +1,61 @@
+##create a folder called as app inside the folder create a file app.sh
+#!/bin/sh
+sudo apt-get update -y
+sudo apt install -y apache2
+sudo chmod -R 777 /var/www/html
+sudo echo "Welcome to nowhere - WebVM  - VM Hostname: $(hostname)" > /var/www/html/index.html
+
+  ##lets create the data block which will call my ami
+data "aws_ami" "ubuntu" {
+ most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/image/hvm-ssd*/ubuntu-*-amd64-server-*"]
+  }
+filter {
+  name = "architecture"
+  values = ["x86_64"]
+}
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+  
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+  filter {
+    name = "state"
+    values = [ available ]
+  }
+}
+
+#it can match 
+#ubuntu desktop image ubuntu pro image arm image minimal image other version of ubuntu
+##this will resturn latest ubuntu server ami 
+  #3now we are going to launch the instance 
+  ###lets launch the instance
+
+  resource "aws_instance" "web" {
+    for_each = aws_subnet.web_subnet
+    ami = data.aws_ami.ubuntu.id
+    instance_type = "t3.micro"
+    subnet_id = each.value.id
+    vpc_security_group_ids = [ aws_security_group.web_sg.id ]
+    key_name = aws_key_pair.aws_key.key_name
+    associate_public_ip_address = true
+    user_data = file("${path.module}/app/app.sh")
+    tags = merge (local.project_tags,
+           {
+            Name = "web-gopal-${each.key}"
+           }
+    )
+
+}
+
+##finally add the output block also 
+  output "public_ips" {
+  value = [for instance in aws_instance.web: instance.public_ip]
+}
