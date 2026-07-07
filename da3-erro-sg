@@ -1,0 +1,59 @@
+#before this do terraform destroy
+#replace the sg with this 
+locals {
+  ports = [22, 80, 443]
+}
+
+resource "aws_security_group" "web_sg" {
+  name   = "web-sg-gopal"
+  vpc_id = aws_vpc.my_vpc.id
+  dynamic "ingress" {
+    for_each = local.ports
+    content {
+      from_port   = ingress.value
+      to_port     = ingress.value
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+
+    }
+
+  }
+  dynamic "egress" {
+    for_each = local.ports
+    content {
+      from_port   = 0
+      to_port     = 0
+      protocol    = "-1"
+      cidr_blocks = ["0.0.0.0/0"]
+      ipv6_cidr_blocks = [ "::/0" ]
+
+    }
+  }
+}
+
+##replace the app.sh
+#!/bin/bash
+apt-get update -y
+apt-get install -y unzip wget curl git
+apt-get install -y apache2
+systemctl enable apache2
+systemctl start apache2
+echo "welcome to my website $(hostname)" > /var/www/html/index.html
+
+  ##also verify the vm for the path of app.sh file 
+  resource "aws_instance" "web" {
+  for_each                    = aws_subnet.web_subnet
+  ami                         = data.aws_ami.ubuntu.id
+  instance_type               = "t3.medium"
+  subnet_id                   = each.value.id
+  vpc_security_group_ids      = [aws_security_group.web_sg.id]
+  key_name                    = aws_key_pair.aws_key.key_name
+  associate_public_ip_address = true
+  user_data                   = file("${path.module}/app/app.sh")
+  tags = merge(local.project_tags,
+    {
+      Name = "web-gopal-${each.key}"
+    }
+  )
+
+}
