@@ -1,0 +1,32 @@
+##lets create the natgw elastic ip create a new file 
+  resource "aws_eip" "nat_ip" {
+  domain = "vpc-gopal"
+  tags = merge(local.project_tags,
+  { Name = "skyrocketvpc-gopal-gopal-eip" })
+}
+
+#lets create the nat gw
+  resource "aws_nat_gw" "natgw" {
+  allocation_id = aws_eip.nat_id.id
+  subnet_id     = aws_subnet.web_subnet["subnet1"].id
+  depends_on    = [aws_internet_gateway.igw]
+  tags = merge(local.project_tags,
+  { Name = "skyrocketvpc-gopal-gopal-nat" })
+}
+
+###inside custom rtb private add the nat gw information in the route block. 
+  resource "aws_route_table" "private_rtb" {
+  vpc_id = aws_vpc.my_vpc.id
+
+   route {
+    cidr_block = "0.0.0.0/0"
+   nat_gateway_id = aws_nat_gateway.id
+
+  }
+
+
+  tags = merge(local.project_tags,
+  { Name = "skyrocketvpc-gopal-privatertb" })
+}
+
+#do terraform apply
