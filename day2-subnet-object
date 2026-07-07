@@ -40,3 +40,10 @@
 
 #do terraform plan bcz of for each it will show you it is creating three subnet. then do terraform apply
   
+#delete the web_subnet output block from output file and add this 
+output "aws_subnet_id" {
+  value       = {
+    for k, v in aws_subnet.web_subnet :
+    k => v.id}
+  description = "The ID of the web subnet"
+}
