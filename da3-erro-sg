@@ -57,3 +57,33 @@ echo "welcome to my website $(hostname)" > /var/www/html/index.html
   )
 
 }
+##replace the data block with this
+data "aws_ami" "ubuntu" {
+  most_recent = true
+  owners      = ["099720109477"]
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd*/ubuntu-*-amd64-server-*"]
+  }
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+  filter {
+    name   = "state"
+    values = ["available"]
+  }
+}
+
+#it can match 
+#ubuntu desktop image ubuntu pro image arm image minimal image other version of ubuntu
+##this will resturn latest ubuntu server ami 
