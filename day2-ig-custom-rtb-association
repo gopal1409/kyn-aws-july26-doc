@@ -1,0 +1,36 @@
+##lets create a file for internet gwb2.ig.tf
+  resource "aws_internet_gateway" "igw" {
+  vpc_id = aws_vpc.my_vpc.id
+
+  tags = merge(local.project_tags,
+  { Name = "skyrocketvpc-gopal-igw" })
+}
+
+##lets create an custom rtb b3.public-rtb.tf
+  resource "aws_route_table" "public_rtb" {
+  vpc_id = aws_vpc.my_vpc.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.igw.id
+  }
+
+
+  tags = merge(local.project_tags,
+  { Name = "skyrocketvpc-gopal-publicrtb" })
+}
+
+###lets create the custom rtb assoication with public ip b4.public-subnet-association.tf
+  resource "aws_route_table_association" "public_association" {
+  for_each = aws_subnet.web_subnet
+  subnet_id = each.value.id
+  route_table_id = aws_route_table.public_rtb.id 
+}
+
+##do terraform apply verify the same in your custom rtb
+
+  Exercise
+  1. create another two subnet as private subnet using two az 
+  2. create an custom rtb called as private
+  3. associate the custom rtb with the private rtb
+  ##verify the same
