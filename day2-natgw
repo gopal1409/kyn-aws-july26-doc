@@ -1,6 +1,6 @@
 ##lets create the natgw elastic ip create a new file 
   resource "aws_eip" "nat_ip" {
-  domain = "vpc-gopal"
+  domain = "vpc"
   tags = merge(local.project_tags,
   { Name = "skyrocketvpc-gopal-gopal-eip" })
 }
