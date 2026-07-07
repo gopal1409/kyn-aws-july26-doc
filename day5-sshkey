@@ -1,0 +1,14 @@
+##we will generate the ssh public and private key
+  41 mkdir ssh-keys                                                                 
+  42 cd .\ssh-keys\        
+  ##just press enter enter and enter
+  43 ssh-keygen  -t rsa -b 4096 -f aws-key 
+
+  ##once we generate the key we need to upload the public key in aws
+  resource "aws_key_pair" "aws_key" {
+  key_name = "gopal-key"
+ #public_key = file( C:\Users\gopal\OneDrive\Desktop\terraform-skyproject\ssh-keys> )
+  public_key = file("${path.module}/ssh-keys/aws-key.pub")
+}
+
+#path.module is an terraform meta argument which is used for looking for any file in the current directory
