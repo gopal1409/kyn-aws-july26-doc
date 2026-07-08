@@ -38,9 +38,7 @@ provider "aws" {
   bucket = "gopal-tfstate-${random_pet.bucket_name.id}"
   
   #enable versioning
-  versioning {
-    enabled = true
-  }
+  
   tags = {
     Name = "terraform tfstate for gopal"
   }
@@ -54,6 +52,12 @@ output "bucket_name" {
 output "bucket_arn" {
   description = "name of the bucket"
   value = aws_s3_bucket.tfstate.arn
+}
+resource "aws_s3_bucket_versioning" "versioning" {
+  bucket = aws_s3_bucket.tfstate.id
+  versioning_configuration {
+    status = "Enabled"
+  }
 }
   ###then do terraform init
     terraform validate 
