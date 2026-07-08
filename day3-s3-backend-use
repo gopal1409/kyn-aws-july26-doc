@@ -1,0 +1,42 @@
+##lets destroy all the resource first
+  terraform destroy
+  ###then delete some of the file 
+  .terraform
+  terrform.tfstate
+  terraform.tfstate.backup
+  terraform lock file
+  #####once deleted 
+  #inside the provider block add the backend 
+  terraform {
+  required_providers {
+    aws = { #this is the name of the cloud service provider
+      source  = "hashicorp/aws"
+      version = "~> 6.0" #it is important for production
+    }
+  }
+  backend "s3" {
+    bucket = "gopal-tfstate-good-hen" #change the bucketname as per your bucket name
+    key = "dev/project-hail-marry.tfstate"
+    region = "us-east-1"
+    use_lockfile = true
+  }
+}
+
+# Configure the AWS Provider
+provider "aws" {
+  region = var.aws_region #this will ensure that all resources are created in the specified AWS region
+  #this is the subscription id for your AWS account
+}
+
+#this provider block is divded into two parts
+//
+/* close */
+  #after this do terraform init
+  #a .terraform folder will be created inside that look into the tfstate file
+  ##then do 
+  terraform validate
+  terraform plan
+  terraform apply
+  ##########once completed go to the s3 bucket inside your s3 bucket a /dev/ folder inside that you will find your state file
+  ##after that do terraform destroy
+  
