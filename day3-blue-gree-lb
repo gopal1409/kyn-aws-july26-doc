@@ -35,3 +35,54 @@ output "public_ips_green" {
 }
 ##then copy one of the public green instance ip 
   welcome to my website ip-10-0-1-42 green
+##lets create the target group green e5.tg-green.tf
+resource "aws_lb_target_group" "green_tg" {
+  name     = "gopal-web-green-tg"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = aws_vpc.my_vpc.id
+  health_check {
+    enabled             = true
+    healthy_threshold   = 3
+    unhealthy_threshold = 2
+    interval            = 30
+    timeout             = 4
+    path                = "/"
+    protocol            = "HTTP"
+    matcher             = "200" #if it dont return the request 200 that instance need to be unhealthy
+  }
+  tags = merge(local.project_tags,
+    {
+      Name = "web-gopal-lb"
+  })
+}
+
+##once we create the target group we need to attach this instance to the target group e5.green-target.tf
+#as we have created all the instance using for_each loop 
+#in the target group attachment we need to register all the instance using for_each
+resource "aws_lb_target_group_attachment" "green_targets" {
+  for_each         = aws_instance.green
+  target_group_arn = aws_lb_target_group.green_tg.arn
+  target_id        = each.value.id
+  port             = 80
+}
+##3finally we need to divert traffic to the listener modify the listener
+resource "aws_lb_listener" "http" {
+  load_balancer_arn = aws_alb.web-lb.arn
+  port = 80
+  protocol = "HTTP"
+  default_action {
+    type = "forward"
+    #forward the request to target group
+   forward {
+     target_group {
+       arn = aws_lb_target_group.web_tg.arn 
+       weight = 50
+     }
+     target_group {
+       arn = aws_lb_target_group.green_tg.arn 
+       weight = 50
+     }
+   }
+  }
+}
