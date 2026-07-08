@@ -63,4 +63,19 @@ resource "aws_s3_bucket_versioning" "versioning" {
     terraform validate 
     terraform plan
     terraform apply
-    
+    Backend configuration file (Enterprise best Practice
+Instead of hardcoding the provider.tf file we can leave it empty
+We can create a file with extension hcl and provide the backend configuration
+You can intilzed the same with terraform init backend-config=nameofthehcl file. 
+
+Using the same terraform code we can create dev test staging prod environment. We need to seprate the backend setting from your terraform configuration we will make easy to use in different backend for dev test staging prod
+#go to the provider block in the backend block remove all the content
+ backend "s3" {}
+####lets create a new file backend-dev.hcl
+bucket = "gopal-tfstate-good-hen" #change the bucketname as per your bucket name
+key = "dev/project-hail-marry.tfstate"
+region = "us-east-1"
+use_lockfile = true
+
+###terraform destroy and delete the .terraform folder to run the same pass the hcl file
+terraform init -backend-config backend-de.hcl 
