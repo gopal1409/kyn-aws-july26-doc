@@ -1,0 +1,625 @@
+This Terraform configuration creates a complete AWS networking environment and launches three Ubuntu EC2 instances in three different Availability Zones. It demonstrates many Terraform concepts such as:
+
+Provider configuration
+Variables
+Locals
+Resources
+Data Sources
+Dynamic Blocks
+for_each loop
+Outputs
+Meta arguments
+File function
+
+Below is a complete explanation.
+
+Step 1 - Terraform Block
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 6.0"
+    }
+  }
+}
+Purpose
+
+The terraform block tells Terraform:
+
+Which provider is required
+Which version should be used
+Terraform
+        │
+        ▼
+AWS Provider
+Version 6.x
+Explanation
+source = "hashicorp/aws"
+
+Downloads the AWS Provider from HashiCorp Registry.
+
+version = "~> 6.0"
+
+Means
+
+Allowed
+
+6.0
+6.1
+6.2
+6.5
+6.18
+
+Not Allowed
+
+7.0
+5.90
+
+Production environments always pin provider versions to avoid unexpected breaking changes.
+
+Step 2 - AWS Provider
+provider "aws" {
+  region = var.aws_region
+}
+
+This tells Terraform where resources should be created.
+
+Instead of hardcoding
+
+region="us-east-1"
+
+you used
+
+var.aws_region
+
+which comes from a variable.
+
+Advantages
+
+reusable
+environment independent
+easy to change
+Step 3 - Variable
+variable "aws_region" {
+  default = "us-east-1"
+}
+
+Variables are like parameters in programming.
+
+Instead of writing
+
+us-east-1
+
+100 times
+
+You define once
+
+aws_region
+
+and use it everywhere.
+
+Terraform substitutes
+
+var.aws_region
+
+↓
+
+us-east-1
+Step 4 - VPC
+resource "aws_vpc" "my_vpc" {
+
+Creates a Virtual Private Cloud.
+
+Think of a VPC as your own private network inside AWS.
+
+AWS
+
+┌───────────────────────┐
+│       Your VPC        │
+│                       │
+│ 10.0.0.0/16           │
+│                       │
+└───────────────────────┘
+CIDR
+cidr_block = var.vpc_cidr
+10.0.0.0/16
+
+means
+
+65,536 IP Addresses
+
+Range
+
+10.0.0.0
+↓
+
+10.0.255.255
+DNS Support
+enable_dns_support = true
+
+Allows AWS DNS.
+
+Example
+
+ip-10-0-1-15.ec2.internal
+DNS Hostname
+enable_dns_hostnames=true
+
+Allows public DNS
+
+Example
+
+ec2-52-20-30-40.compute.amazonaws.com
+Step 5 - Locals
+locals {
+  project_tags = {
+
+Locals store reusable values.
+
+Instead of writing
+
+Project=skyrocket
+
+Environment=dev
+
+Owner=SAP
+
+everywhere,
+
+you write once.
+
+Step 6 - Merge Function
+tags = merge(local.project_tags,{
+Name="skyrocketvpc-gopal"
+})
+
+Terraform combines
+
+Local Tags
+
+Project
+
+Environment
+
+Owner
+
+with
+
+Name
+
+Final
+
+Project
+
+Environment
+
+Owner
+
+Name
+Step 7 - Public Subnet Variable
+variable "web_subnet"
+
+This is a Map of Objects.
+
+Each subnet contains
+
+Subnet
+
+AZ
+
+CIDR
+
+Example
+
+subnet1
+
+AZ
+
+us-east-1a
+
+CIDR
+
+10.0.1.0/24
+Step 8 - Public Subnet Resource
+resource "aws_subnet" "web_subnet"
+
+Creates three subnets.
+
+Because
+
+for_each = var.web_subnet
+
+Terraform loops.
+
+Loop 1
+
+subnet1
+
+Loop 2
+
+subnet2
+
+Loop 3
+
+subnet3
+
+Result
+
+VPC
+
+├──Subnet1
+
+├──Subnet2
+
+└──Subnet3
+each.key
+subnet1
+
+subnet2
+
+subnet3
+each.value
+
+Contains
+
+AZ
+
+CIDR
+
+Example
+
+each.value.az
+
+↓
+
+us-east-1a
+Step 9 - Internet Gateway
+resource "aws_internet_gateway"
+
+Provides Internet access.
+
+Without IGW
+
+Internet
+
+×
+
+VPC
+
+With IGW
+
+Internet
+
+↓
+
+IGW
+
+↓
+
+VPC
+Step 10 - Public Route Table
+resource "aws_route_table"
+
+Creates routing.
+
+0.0.0.0/0
+
+↓
+
+Internet Gateway
+
+Meaning
+
+Everything not inside VPC goes to Internet.
+
+Step 11 - Route Table Association
+resource "aws_route_table_association"
+
+Associates every subnet with the route table.
+
+Again
+
+for_each
+
+creates
+
+Association1
+
+Association2
+
+Association3
+Step 12 - Private Subnets
+resource "aws_subnet" "private_subnet"
+
+Creates
+
+Private1
+
+Private2
+
+These are normally used for
+
+Database
+Backend Servers
+Application Servers
+Step 13 - NAT Gateway (Commented)
+
+Your code contains
+
+aws_nat_gateway
+
+currently commented.
+
+Normally architecture is
+
+Internet
+
+↓
+
+IGW
+
+↓
+
+Public Subnet
+
+↓
+
+NAT Gateway
+
+↓
+
+Private Subnet
+
+Private servers can access Internet
+
+But Internet cannot access them.
+
+Step 14 - Security Group
+resource "aws_security_group"
+
+Acts as a firewall.
+
+Dynamic Ingress
+dynamic "ingress"
+
+Instead of writing
+
+22
+
+80
+
+443
+
+three times,
+
+Terraform loops.
+
+Ports
+
+22
+
+80
+
+443
+
+Creates
+
+SSH
+
+HTTP
+
+HTTPS
+Step 15 - Dynamic Egress
+dynamic "egress"
+
+Allows all outbound traffic.
+
+0.0.0.0/0
+
+IPv6
+
+::/0
+
+A simpler alternative would be a single egress block without a loop, since every generated rule is identical.
+
+Step 16 - Key Pair
+resource "aws_key_pair"
+
+Uploads your local public SSH key.
+
+Terraform reads
+
+ssh-keys/aws-key.pub
+
+using
+
+file()
+
+Now EC2 instances can be accessed using SSH.
+
+Step 17 - Data Source
+data "aws_ami" "ubuntu"
+
+A data source reads existing information instead of creating resources.
+
+It searches AWS for the latest Ubuntu Server AMI.
+
+Filters include:
+
+Owner = Canonical
+x86_64 architecture
+EBS root volume
+HVM virtualization
+Available state
+Latest matching image
+
+Result:
+
+Latest Ubuntu AMI ID
+
+↓
+
+ami-xxxxxxxx
+Step 18 - EC2 Instance
+resource "aws_instance"
+
+Again
+
+for_each = aws_subnet.web_subnet
+
+creates
+
+EC2-1
+
+Subnet1
+EC2-2
+
+Subnet2
+EC2-3
+
+Subnet3
+AMI
+ami=data.aws_ami.ubuntu.id
+
+Uses the AMI discovered by the data source.
+
+Instance Type
+t3.medium
+
+Configuration
+
+2 vCPU
+4 GB RAM
+Security Group
+vpc_security_group_ids
+
+Attaches
+
+web_sg
+Key Pair
+key_name
+
+Allows SSH login.
+
+Public IP
+associate_public_ip_address=true
+
+Each instance receives a public IP.
+
+User Data
+user_data=file("${path.module}/app/app.sh")
+
+When the instance boots,
+
+AWS automatically executes
+
+app.sh
+
+Typical tasks include:
+
+Install Apache or Nginx
+Install Docker
+Install Git
+Configure applications
+Step 19 - Outputs
+VPC ID
+output "aws_vpc_id"
+
+Displays
+
+vpc-xxxxxxxx
+Subnet IDs
+output "aws_subnet_id"
+
+Displays
+
+subnet1
+
+↓
+
+subnet-xxxxx
+subnet2
+
+↓
+
+subnet-yyyy
+subnet3
+
+↓
+
+subnet-zzzzz
+Public IPs
+output "public_ips"
+
+Loops through every EC2 instance and returns their public IP addresses, for example:
+
+[
+  "54.82.xx.xx",
+  "44.211.xx.xx",
+  "3.91.xx.xx"
+]
+Resource Creation Order
+
+Terraform automatically determines dependencies based on resource references. The overall flow is:
+
+Terraform Init
+      │
+      ▼
+AWS Provider
+      │
+      ▼
+Create VPC
+      │
+      ▼
+Create Public Subnets
+      │
+      ▼
+Create Private Subnets
+      │
+      ▼
+Create Internet Gateway
+      │
+      ▼
+Create Public Route Table
+      │
+      ▼
+Associate Route Table to Public Subnets
+      │
+      ▼
+Create Security Group
+      │
+      ▼
+Upload SSH Key Pair
+      │
+      ▼
+Lookup Latest Ubuntu AMI
+      │
+      ▼
+Launch Three EC2 Instances
+      │
+      ▼
+Display Outputs
+Terraform Concepts Demonstrated
+Concept	Where Used	Purpose
+terraform block	Provider definition	Specifies required provider and version
+Provider	provider "aws"	Connects Terraform to AWS
+Variables	aws_region, vpc_cidr, web_subnet, private_subnet	Makes the configuration reusable
+Locals	project_tags, ports	Stores reusable values within the module
+Resources	VPC, Subnets, IGW, Route Table, EC2, Security Group	Creates AWS infrastructure
+Data Source	data "aws_ami"	Reads the latest Ubuntu AMI without creating it
+for_each	Subnets, Route Associations, EC2 Instances	Creates multiple resources from a map
+Dynamic Blocks	Security Group ingress and egress	Generates repeated nested blocks programmatically
+Functions	merge(), file()	Combines maps and reads local files
+Outputs	VPC ID, Subnet IDs, Public IPs	Displays useful values after terraform apply
+Suggested Improvements
+
+A few changes would make this configuration more production-ready:
+
+Set map_public_ip_on_launch = false for the private subnets.
+Remove the for_each loop from the egress block and use a single "allow all" rule, since the loop creates identical rules.
+Uncomment and configure the NAT Gateway, Elastic IP, and private route table so private subnets have outbound internet access.
+Use variables for values such as instance_type and key_name to support multiple environments.
+Add an output for the private subnet IDs if you'll use them in later modules.
+Consider splitting the configuration into separate files (provider.tf, variables.tf, network.tf, security.tf, compute.tf, outputs.tf) or reusable modules as the project grows.
+
+This configuration is an excellent hands-on example because it combines networking, security, compute, loops, dynamic blocks, data sources, and outputs into a single deployable Terraform project.
