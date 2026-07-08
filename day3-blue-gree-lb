@@ -1,0 +1,37 @@
+#lets create green instance
+  ##inside the app folder create a new sh script give the filename as appgreen.sh
+#!/bin/bash
+apt-get update -y
+apt-get install -y unzip wget curl git
+apt-get install -y apache2
+systemctl enable apache2
+systemctl start apache2
+echo "welcome to my website $(hostname) green" > /var/www/html/index.html
+  #######create a new file d5.green-instance.tf
+  resource "aws_instance" "green" {
+  for_each                    = aws_subnet.web_subnet
+  ami                         = data.aws_ami.ubuntu.id
+  instance_type               = "t3.micro"
+  subnet_id                   = each.value.id
+  vpc_security_group_ids      = [aws_security_group.web_sg.id]
+  key_name                    = aws_key_pair.aws_key.key_name
+  associate_public_ip_address = true
+  user_data                   = file("${path.module}/app/appgreen.sh") #this sh script need to match with your green sh script
+  tags = merge(local.project_tags,
+    {
+      Name = "web-gopal-green${each.key}"
+    }
+  )
+
+}
+
+#and in the output 
+  output "public_ips_blue" {
+  value = [for instance in aws_instance.web : instance.public_ip]
+}
+
+output "public_ips_green" {
+  value = [for instance in aws_instance.green : instance.public_ip]
+}
+##then copy one of the public green instance ip 
+  welcome to my website ip-10-0-1-42 green
