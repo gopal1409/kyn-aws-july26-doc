@@ -72,3 +72,13 @@ resource "aws_lb_target_group" "web_tg" {
       Name = "web-gopal-lb"
   })
 }
+#create a file e4.instance-attach-tg.tf
+#as we have created all the instance using for_each loop 
+#in the target group attachment we need to register all the instance using for_each
+resource "aws_lb_target_group_attachment" "web_targets" {
+  for_each         = aws_instance.web
+  target_group_arn = aws_lb_target_group.web_tg.arn
+  target_id        = each.value.id
+  port             = 80
+}
+###terraform apply then go to target group check all the instance are attached to your target group
