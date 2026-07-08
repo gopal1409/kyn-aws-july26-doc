@@ -93,3 +93,10 @@ resource "aws_lb_listener" "http" {
     target_group_arn = aws_lb_target_group.web_tg.arn
   }
 }
+
+#verification
+!. check the load balancer listener pointing towards target group
+2. check the target group in resource it will show the instance are health 
+3. generate the graph and visualized the flow from lb---> listener-targetgroup
+4. copy the dns name paste it in the browser you will see the web page
+you can do hard refresh traffic is movin in round robin fashio
