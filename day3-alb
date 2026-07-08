@@ -28,7 +28,7 @@
     }
     tags = merge(local.project_tags,
     {
-      Name = "web-gopal-lb${each.key}"
+      Name = "web-gopal-lb"
     }
   )
 }
