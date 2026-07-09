@@ -62,4 +62,46 @@ variable "blue_instances" {
   ##lets create the resource
   terraform apply --var-file=dev.tfvars
 
+#lets add the green environment
+#inside the instance-varaibles.tf add this below varibles declaration 
+variable "green_instances" {
+  type = map(object({
+    subnet = string
+    instance_type = string
+  }))
+}
 
+##########then modify the greenvm.tf 
+resource "aws_instance" "green" {
+  for_each                    = var.green_instances #this is going to loop with number of subnet
+  ami                         = data.aws_ami.ubuntu.id
+  instance_type               = each.value.instance_type #add the instance type
+  subnet_id                   = aws_subnet.web_subnet[each.value.subnet].id #subnet need to call as per the set varaibles
+  vpc_security_group_ids      = [aws_security_group.web_sg.id]
+  key_name                    = aws_key_pair.aws_key.key_name
+  associate_public_ip_address = true
+  user_data                   = file("${path.module}/app/appgreen.sh")
+  tags = merge(local.project_tags,
+    {
+      Name = "web-gopal-green${each.key}"
+    }
+  )
+
+}
+
+##declare the varaibles using green.tfvars
+green_instances = {
+    green1 = {
+        subnet = "subnet1"
+        instance_type = "t3.small"
+    }
+
+    green2 = {
+        subnet = "subnet2"
+        instance_type = "t3.small"
+    }
+    
+}
+
+##to apply this
+terraform apply --var-file=blue.tfvars terraform apply --var-file=green.tfvars
