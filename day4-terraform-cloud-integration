@@ -1,0 +1,16 @@
+###lets create a new file .gitignore 
+.terraform
+terraform.tfstate
+terraform.tfstate.backup
+.terraform.lock.hcl
+#configure the git global varaible
+  74 git config --global user.name "gopal"                                                                                            
+  75 git config --global user.email "gopal1409@gmail.com"                                                                              
+  76 git init                                                                                                                          
+  77 git add .                                                                                                                         
+                                                                                     
+  79 git commit -m "terraform cloud integration"                                                                                       
+  80 git status  
+  #git log will show the version you have created
+  81 git log 
+  #########################################
