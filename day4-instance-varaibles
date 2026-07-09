@@ -1,0 +1,65 @@
+#accroding to environment we can choose number of instance and instance type also
+  ##create a file instance_varaibles.tf
+  /*variable "instance_type_blue" {
+    type = string
+    default="t3.micro"
+
+}
+variable "instance_type_green" {
+  type = string 
+  default = "t2.micro"
+}*/
+
+variable "blue_instances" {
+  type = map(object({
+    subnet = string
+    instance_type = string
+  }))
+}
+
+#change the d4.vm.tf
+  resource "aws_instance" "web" {
+  for_each                    = var.blue_instances #i loop around using subnet
+  ami                         = data.aws_ami.ubuntu.id
+  subnet_id                   = aws_subnet.web_subnet[each.value.subnet].id
+  instance_type               = each.value.instance_type #we provide set of values using terraform object instance type and az
+  #instance_type = var.instance_type_blue #this will used for string
+
+  vpc_security_group_ids      = [aws_security_group.web_sg.id]
+  key_name                    = aws_key_pair.aws_key.key_name
+  associate_public_ip_address = true
+  user_data                   = file("${path.module}/app/app.sh")
+  tags = merge(local.project_tags,
+    {
+      Name = "web-gopal-${each.key}"
+    }
+  )
+
+}
+
+##once and create teh varaibles declaration file also 
+  ##blue.tfvars
+  blue_instances = {
+    blue1 = {
+        subnet = "subnet1"
+        instance_type = "t3.medium"
+    }
+
+    blue2 = {
+        subnet = "subnet3"
+        instance_type = "t3.medium"
+    }
+    
+}
+
+####at the top your can put different type of instance
+  ##do terraform apply
+  ##press ctrl c
+  terraform apply it is locked
+  ##to unlock forcefully lock id
+   23 terraform force-unlock 003c9971-d2b9-600a-792c-5fd4c3ae13f0
+
+  ##lets create the resource
+  terraform apply --var-file=dev.tfvars
+
+
