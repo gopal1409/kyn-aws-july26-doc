@@ -14,3 +14,9 @@ terraform.tfstate.backup
   #git log will show the version you have created
   81 git log 
   #########################################
+#lets generate an keypair to do authentication with your github account
+##################################
+ssh-keygen -t rsa
+##########just press enter enter enter 
+##it will show you path of the public key
+cat C:\Users\gopal/.ssh/id_rsa.pub
