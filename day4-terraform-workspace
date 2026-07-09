@@ -1,0 +1,111 @@
+terraform destroy
+##lets gather all the file inside a single file with extension tfvars
+  ##before that inside generic varaible we will create an environment varaibles
+  variable "environment_tags" {
+  description = "Common tags applied to all AWS resources"
+
+  type = string
+
+  default = ""
+}
+##lets use the same in vpc inside vpc tag check how i have added the environment varaibles
+  resource "aws_vpc" "my_vpc" {
+  cidr_block           = var.vpc_cidr
+  enable_dns_support   = true
+  enable_dns_hostnames = true
+  tags = merge(local.project_tags,
+
+  { Name = "skyrocketvpc-gopal-${var.environment_tags}" }) #replace the previous line with this line
+}
+
+###now lets create dev.tfvars
+  aws_region = "us-east-1"
+vpc_cidr ="10.0.0.0/16"
+web_subnet_cidr = "10.0.1.0/24"
+environment_tags = "dev"
+blue_instances = {
+    blue1 = {
+        subnet = "subnet1"
+        instance_type = "t3.medium"
+    }
+
+    blue2 = {
+        subnet = "subnet3"
+        instance_type = "t3.medium"
+    }
+    
+}
+green_instances = {
+    green1 = {
+        subnet = "subnet1"
+        instance_type = "t3.small"
+    }
+
+    green2 = {
+        subnet = "subnet2"
+        instance_type = "t3.small"
+    }
+    
+}
+##lets create teh test.tfvars
+  aws_region = "us-east-1"
+vpc_cidr ="12.0.0.0/16"
+web_subnet_cidr = "12.0.1.0/24"
+environment_tags = "test"
+blue_instances = {
+    blue1 = {
+        subnet = "subnet1"
+        instance_type = "t2.medium"
+    }
+
+    blue2 = {
+        subnet = "subnet3"
+        instance_type = "t2.medium"
+    }
+    
+}
+green_instances = {
+    green1 = {
+        subnet = "subnet1"
+        instance_type = "t3.small"
+    }
+
+    green2 = {
+        subnet = "subnet2"
+        instance_type = "t3.small"
+    }
+    
+}
+##then create prod.tfvars
+  aws_region = "us-east-1"
+vpc_cidr ="13.0.0.0/16"
+web_subnet_cidr = "13.0.1.0/24"
+environment_tags = "prod"
+blue_instances = {
+    blue1 = {
+        subnet = "subnet1"
+        instance_type = "t3.large"
+    }
+
+    blue2 = {
+        subnet = "subnet3"
+        instance_type = "t3.large"
+    }
+    
+}
+green_instances = {
+    green1 = {
+        subnet = "subnet1"
+        instance_type = "t3.small"
+    }
+
+    green2 = {
+        subnet = "subnet2"
+        instance_type = "t3.small"
+    }
+    
+}
+###lets apply once with dev.tfvar to see it pickup all the values before we will go to workspace creation
+  terraform apply --var-file=dev.tfvars
+  terraform destroy --var-file=dev.tfvars
+  
