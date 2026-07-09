@@ -20,3 +20,11 @@ ssh-keygen -t rsa
 ##########just press enter enter enter 
 ##it will show you path of the public key
 cat C:\Users\gopal/.ssh/id_rsa.pub
+####environment varaibles
+AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY
+AWS_DEFAULT_REGION
+###we need to pass varaibles file before we apply
+TF_CLI_ARGS_plan -var-file="dev.tfvars
+TF_CLI_ARGS-apply -var-file="dev.tfvars
+##############################
