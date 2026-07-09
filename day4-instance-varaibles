@@ -104,4 +104,4 @@ green_instances = {
 }
 
 ##to apply this
-terraform apply --var-file=blue.tfvars terraform apply --var-file=green.tfvars
+terraform apply --var-file=blue.tfvars --var-file=green.tfvars
