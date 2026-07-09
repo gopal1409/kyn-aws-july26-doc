@@ -108,4 +108,22 @@ green_instances = {
 ###lets apply once with dev.tfvar to see it pickup all the values before we will go to workspace creation
   terraform apply --var-file=dev.tfvars
   terraform destroy --var-file=dev.tfvars
-  
+  #we will create the resources using terraform workspaces
+#lets create a new workspace 
+terraform workspace 
+#we will create a new workspace
+terraform workspace new dev
+terraform workspace list
+#########lets aplly the dev.tfvars
+terraform apply --var-file=dev.tfvars
+########################################
+#lets create the terraform workspace prod
+terraform workspace new prod
+terraform apply --var-file=prod.tfvars
+#######################################
+#finally go to s3 bucket you will see the env folder which contains the state file
+##to destroy it
+terraform destroy --var-file=prod.tfvars
+###then to destroy in dev environment
+terraform workspace select dev
+terraform destroy --var-file=dev.tfvars
