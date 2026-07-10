@@ -41,7 +41,7 @@ git commit -m "terraform module"
 git push origin master
 ####
 ##once push
-#create a new folder in desktop
+#create a new folder in desktop calling_module
 varaibles.tf
 ################################
 variable "aws_region" {
