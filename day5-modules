@@ -156,7 +156,7 @@ private_subnets = {
   }
 }
 
-tag = {
+tags = {
     Project = "Skyrocket-gopal"
     Environment = "Development"
     Owner = "IT"
