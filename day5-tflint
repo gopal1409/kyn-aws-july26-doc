@@ -1,8 +1,12 @@
 ##how to install tflint
   #open powershell in admin mode
   choco install tflint
+choco install tfsec
   ###close the powershell
   ##open visual studio code
   ##check the difference between tflint and terraform validate
   terraform validate
   tflint
+##to have an sucessfull plan you need to test static code anlysis checkov and tfsec 
+#inside your project directory
+tfsec .
