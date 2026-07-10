@@ -1,0 +1,16 @@
+#what you want to import create a new file called as import.tf
+  #like you want to import an instance resource block 
+  import {
+    to = aws_instance.web1
+    id = "i-0cc04dfc85d25d37b"
+}
+
+##you want to import s3 bucket
+  import {
+    to = aws_s3_bucket.tfstate
+    id = "providethebucketname"
+}
+
+##########then in the terminal run this command with the absolute path of your project
+  19 terraform plan -generate-config-out=C:\Users\gopal\OneDrive\Desktop\project\generate.tf
+  ##inside the generate.tf file you can see the resource block
