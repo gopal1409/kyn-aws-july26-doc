@@ -169,3 +169,14 @@ tag = {
 26 terraform apply --var-file=dev.tfvars   
 #######to destroy the resource
 26 terraform destroy --var-file=dev.tfvars 
+
+#lets add the security module as per the github link and security folde create those files and upload it in github
+https://github.com/gopal1409/terraform-aws-blue-green-module-july10
+##after this 
+git add .
+git commit -m "security module added"
+git push origin master
+############once uploaded go back to your calling project. below networking in main.tf file add the security module
+
+
+
