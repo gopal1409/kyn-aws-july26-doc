@@ -1,0 +1,30 @@
+#lets create the directory structure for modules as per industry standard
+  terraform-bluegreen-aws/
+│
+├── modules/
+│   │
+│   ├── networking/
+│   │      ├── main.tf
+│   │      ├── variables.tf
+│   │      ├── outputs.tf
+│   │      └── versions.tf
+│   │
+│   └── security/
+│          ├── main.tf
+│          ├── variables.tf
+│          └── outputs.tf
+│
+├── provider.tf
+├── variables.tf
+├── main.tf
+├── outputs.tf
+├── dev.tfvars
+├── test.tfvars
+└── prod.tfvars
+
+  Networking Module
+  modules/
+    networking/
+            main.tf
+            variables.tf
+            outputs.tf
