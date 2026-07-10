@@ -1,0 +1,117 @@
+###in the calling mode create a file output.tf
+  output "public_subnet_ids" {
+  value = module.networking.public_subnet_ids
+}
+
+output "web_sg_id" {
+    value = module.security.web_sg_id
+}
+###then apply it 
+  terraform apply --var-file=dev.tfvars
+
+  #now create a new folder in desktop called as project-compute
+  ####inside the folder create ami.tf
+  data "aws_ami" "ubuntu" {
+  most_recent = true
+  owners      = ["099720109477"]
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd*/ubuntu-*-amd64-server-*"]
+  }
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+  filter {
+    name   = "state"
+    values = ["available"]
+  }
+}
+
+#it can match 
+#ubuntu desktop image ubuntu pro image arm image minimal image other version of ubuntu
+##this will resturn latest ubuntu server ami 
+
+  ###create a new file data-remote-state.tf modify the remote state to your previous calling module example change the name of the bucket and key and region
+  data "terraform_remote_state" "nwsg" {
+    backend = "s3"
+    config = {
+      bucket = "gopal-tfstate-good-hen"
+      #put the previous module calling state file
+      key = "dev/project-hail-marry-dev-module.tfstate"
+      region = "us-east-1"
+    }
+}
+
+###create the provider.tf file
+  terraform {
+  required_providers {
+    aws = { #this is the name of the cloud service provider
+      source  = "hashicorp/aws"
+      version = "~> 6.0" #it is important for production
+    }
+  }
+  backend "s3" {}
+}
+
+# Configure the AWS Provider
+provider "aws" {
+  region = var.aws_region #this will ensure that all resources are created in the specified AWS region
+  #this is the subscription id for your AWS account
+}
+
+#this provider block is divded into two parts
+//
+/* close */
+
+  #########################
+  varaibles.tf
+  #############################
+  variable "aws_region" {
+  description = "The AWS region to create resources in"
+  type        = string
+  default     = "us-east-1"
+  /* validation {
+    condition = contains(["us-east-1","us-east-2"],var.aws_region)
+    error_message = "choose either us-east-1 or us-east-2"
+  }*/
+}
+#we declare the varaible how to call the varaible
+variable "environment_tags" {
+  description = "Common tags applied to all AWS resources"
+
+  type = string
+
+  default = "gopal-instance"
+}
+#########################################
+  vm.tf
+  #################################
+  resource "aws_instance" "web" {
+  ami                    = data.aws_ami.ubuntu.id
+  instance_type          = "t2.micro"
+
+subnet_id = data.terraform_remote_state.nwsg.outputs.public_subnet_ids["subnet1"]
+
+  vpc_security_group_ids = [
+    data.terraform_remote_state.nwsg.outputs.web_sg_id.id
+  ]
+}
+######backend.hcl change the bucketname and key just put instance
+  bucket = "gopal-tfstate-good-hen" #change the bucketname as per your bucket name
+key = "dev/project-hail-marry-dev-instance.tfstate"
+region = "us-east-1"
+use_lockfile = true
+  ############################init 
+  3 terraform init -backend-config backend-dev.hcl                                 
+   4 terraform apply            
+  
