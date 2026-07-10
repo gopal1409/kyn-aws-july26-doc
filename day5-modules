@@ -28,3 +28,15 @@
             main.tf
             variables.tf
             outputs.tf
+#lets create our first module
+#on your desktop you need to create a folder terraform module inside the folder create all this folder as per the github 
+https://github.com/gopal1409/terraform-aws-blue-green-module-july10
+##inside the folder create all the file as per network folder 
+
+##then do git init
+git add .
+git commit -m "terraform module"
+##create a new repo in github
+#add the repo in your terminal
+git push origin master
+####
