@@ -40,3 +40,132 @@ git commit -m "terraform module"
 #add the repo in your terminal
 git push origin master
 ####
+##once push
+#create a new folder in desktop
+varaibles.tf
+################################
+variable "aws_region" {
+  
+}
+variable "project" {
+  default = "skyrocket"
+}
+
+variable "environment" {
+  
+}
+
+variable "vpc_cidr" {
+  
+}
+
+
+variable "public_subnets" {
+  description = "The name of the public subnet"
+  type = map(object({
+    az   = string
+    cidr = string
+
+  }))
+}
+
+variable "private_subnets" {
+  description = "The name of the public subnet"
+  type = map(object({
+    az   = string
+    cidr = string
+
+  }))
+}
+###########################
+main.tf
+################################
+module "networking" {
+  source = "github.com/gopal1409/terraform-aws-blue-green-module-july10/terraform-bluegreen-aws/modules/networking"
+  project = var.project
+  environment = var.environment
+  vpc_cidr = var.vpc_cidr
+  public_subnets = var.public_subnets
+  private_subnets = var.private_subnets
+  tags = {
+    Owners = "SAP"
+    Project="Skyrocket"
+    Environment = var.environment
+    
+  }
+}
+#######################
+provider.tf
+##############################
+terraform {
+  required_providers {
+    aws = { #this is the name of the cloud service provider
+      source  = "hashicorp/aws"
+      version = "~> 6.0" #it is important for production
+    }
+  }
+  backend "s3" {}
+}
+
+# Configure the AWS Provider
+provider "aws" {
+  region = var.aws_region #this will ensure that all resources are created in the specified AWS region
+  #this is the subscription id for your AWS account
+}
+
+#this provider block is divded into two parts
+//
+/* close */
+
+##########################
+backend-dev.hcl
+#####################################
+bucket = "gopal-tfstate-good-hen" #change the bucketname as per your bucket name
+key = "dev/project-hail-marry-dev-module.tfstate"
+region = "us-east-1"
+use_lockfile = true
+########################################
+dev.tfvars
+########################################
+project = "skyrocket-gopal"
+environment = "dev"
+aws_region  = "us-east-1"
+vpc_cidr = "10.0.0.0/16"
+##networking varaibles
+public_subnets = {
+  "subnet1" = {
+    az = "us-east-1a"
+    cidr = "10.0.1.0/24"
+  }
+
+  "subnet2" = {
+    az = "us-east-1b"
+    cidr = "10.0.2.0/24"
+  }
+}
+
+private_subnets = {
+  "private1" = {
+    az = "us-east-1a"
+    cidr = "10.0.11.0/24"
+  }
+
+  "private2" = {
+    az = "us-east-1b"
+    cidr = "10.0.22.0/24"
+  }
+}
+
+tag = {
+    Project = "Skyrocket-gopal"
+    Environment = "Development"
+    Owner = "IT"
+    Managedby = "terraform"
+}
+
+#do intialization
+22 terraform init --var-file=dev.tfvars -backend-config backend-dev.hcl --upgrade
+##finally apply it
+26 terraform apply --var-file=dev.tfvars   
+#######to destroy the resource
+26 terraform destroy --var-file=dev.tfvars 
