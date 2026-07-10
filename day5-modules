@@ -177,6 +177,57 @@ git add .
 git commit -m "security module added"
 git push origin master
 ############once uploaded go back to your calling project. below networking in main.tf file add the security module
+#inside main.tf file below networking block add this security block
+module "security" {
+  source = "github.com/gopal1409/terraform-aws-blue-green-module-july10/terraform-bluegreen-aws/modules/security"
+  project = var.project
+  environment = var.environment
+  vpc_id = module.networking.vpc_id
+  vpc_cidr="0.0.0/0"
+  tags = var.tags
+}
+
+##variables.tf file replace it
+variable "aws_region" {
+  
+}
+variable "project" {
+  default = "skyrocket"
+}
+
+variable "environment" {
+  
+}
+
+variable "vpc_cidr" {
+  
+}
 
 
+variable "public_subnets" {
+  description = "The name of the public subnet"
+  type = map(object({
+    az   = string
+    cidr = string
+
+  }))
+}
+
+variable "private_subnets" {
+  description = "The name of the public subnet"
+  type = map(object({
+    az   = string
+    cidr = string
+
+  }))
+}
+variable "tags" {
+  type = map(string)
+}
+
+##then do reintizlaition due to new modules available
+
+47 terraform init --var-file=dev.tfvars -backend-config backend-dev.hcl --upgrade    
+$$$apply it
+9 terraform apply --var-file=dev.tfvars   
 
