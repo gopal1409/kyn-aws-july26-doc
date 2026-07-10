@@ -1,0 +1,8 @@
+##how to install tflint
+  #open powershell in admin mode
+  choco install tflint
+  ###close the powershell
+  ##open visual studio code
+  ##check the difference between tflint and terraform validate
+  terraform validate
+  tflint
